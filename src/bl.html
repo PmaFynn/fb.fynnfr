@@ -113,10 +113,10 @@
 <body>
     <div class="container">
         <div class="section" id="schedule">
-            <h2>Match Schedule</h2>
+            <h2>Spieltag</h2>
         </div>
         <div class="section" id="table">
-            <h2>League Table</h2>
+            <h2>Tabelle</h2>
             <div class="team table-header">
                 <span>#</span>
                 <span>Team</span>
@@ -136,6 +136,7 @@
             try {
                 const matchResponse = await fetch("https://api.openligadb.de/getmatchdata/bl1");
                 const matchData = await matchResponse.json();
+                // year has to be changed every season
                 const tableResponse = await fetch("https://api.openligadb.de/getbltable/bl1/2024");
                 const tableData = await tableResponse.json();
 
@@ -206,6 +207,8 @@
     </script>
 </body>
 <footer>
-        powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>
+        powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
 </footer>
 </html>
+<!--https://api.openligadb.de/getnextmatchbyleagueteam/4741/40-->
+<!--https://api.openligadb.de/getnextmatchbyleagueteam/4741/7-->
