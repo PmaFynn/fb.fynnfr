@@ -3,209 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bundesliga Match Schedule & Table</title>
+    <title>Personal Football Hub</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 900px;
-        }
-        .section {
-            width: 100%;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .match, .team {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .match img, .team img {
-            width: 30px;
-            height: 30px;
-        }
-        .team {
-            display: grid;
-            grid-template-columns: 1fr 4fr 1fr 1fr 1fr 1fr 2fr 1fr 1fr;
-            align-items: center;
-            padding: 8px;
-            font-size: 14px;
-        }
-        .table-header {
-            font-weight: bold;
-            background-color: #eaeaea;
-        }
-        .match {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-        }
-
-        .match div {
-            flex: 1;
+            background-color: rgb(245, 241, 241);
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
             text-align: center;
+            width: 300px;
         }
-
-        .match div:nth-child(2) {
-            flex-direction: column;
+        h1 {
+            font-size: 1.5em;
+            margin: 0 0 10px;
         }
-
-        .match img {
-            width: 30px;
-            height: 30px;
-            margin: 0 10px;
+        p {
+            margin: 0 0 20px;
+            color: #555;
         }
-
-        .countdown {
-            font-size: 12px;
-            color: red;
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;  /* Consistent vertical padding */
+            flex: 1;  /* Allow the buttons to grow and fill space equally */
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;  /* Updated from inline-block to inline-flex */
+            border-radius: 5px;
+            margin: 5px;  /* Add margin around each button */
+            cursor: pointer;
+            align-items: center;
+            transition: background-color 0.3s;
+            justify-content: center;
         }
-
-        /* Mobile adjustments */
-        @media (max-width: 600px) {
-            .match {
-                flex-direction: row;
-                justify-content: space-around;
-            }
-            
-            .match div:nth-child(1),
-            .match div:nth-child(3) {
-                display: flex;
-                align-items: center;
-            }
-
-            .match div:nth-child(1) img,
-            .match div:nth-child(3) img {
-                margin: 0;
-            }
-
-            .match div:nth-child(2) {
-                flex-direction: column;
-            }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button-container {
+            display: flex;  /* Use flexbox to line buttons horizontally */
+            justify-content: center;  /* Centers the buttons */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="section" id="schedule">
-            <h2>Match Schedule</h2>
-        </div>
-        <div class="section" id="table">
-            <h2>League Table</h2>
-            <div class="team table-header">
-                <span>#</span>
-                <span>Team</span>
-                <span>Sp</span>
-                <span>W</span>
-                <span>D</span>
-                <span>L</span>
-                <span>Goals</span>
-                <span>GD</span>
-                <span>Pts</span>
-            </div>
+        <h1>Personal Football Hub</h1>
+            <p>I created this because I previously used (bookmarked) other websites, but they tend to be extremely annoying with cookie pop-ups and aggressively pushing their app (e.g., @bundeslia.com).</p>
+            <div class="button-container">
+            <a href="/src/bl.html" class="button">Bundesliga</a>
+            <a href="/src/bb.html" class="button">BB Schedule</a>
         </div>
     </div>
-
-    <script>
-        async function fetchData() {
-            try {
-                const matchResponse = await fetch("https://api.openligadb.de/getmatchdata/bl1");
-                const matchData = await matchResponse.json();
-                const tableResponse = await fetch("https://api.openligadb.de/getbltable/bl1/2024");
-                const tableData = await tableResponse.json();
-
-                displayMatches(matchData);
-                displayTable(tableData);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        }
-
-        function displayMatches(matches) {
-            const scheduleDiv = document.getElementById("schedule");
-            matches.forEach(match => {
-                const matchDate = new Date(match.matchDateTime);
-                const now = new Date();
-                const timeDiff = matchDate - now;
-                let countdownText = "";
-                
-                if (timeDiff > 0) {
-                    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-                    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                    countdownText = `<span class='countdown'>Starts in: ${hours}h ${minutes}m</span>`;
-                }
-                
-                if (timeDiff > 0) {
-                    const matchDiv = document.createElement("div");
-                    matchDiv.className = "match";
-                    matchDiv.innerHTML = `
-                        <div>
-                            <img src="${match.team1.teamIconUrl}" alt="${match.team1.teamName}">
-                            <span>${match.team1.shortName}</span>
-                        </div>
-                        <div>
-                            <span>${matchDate.toLocaleString()}</span>
-                            <div>${countdownText}</div>
-                        </div>
-                        <div>
-                            <span>${match.team2.shortName}</span>
-                            <img src="${match.team2.teamIconUrl}" alt="${match.team2.teamName}">
-                        </div>
-                    `;
-                    scheduleDiv.appendChild(matchDiv);
-                }
-            });
-        }
-
-        function displayTable(teams) {
-            const tableDiv = document.getElementById("table");
-            teams.forEach((team, index) => {
-                const teamDiv = document.createElement("div");
-                teamDiv.className = "team";
-                teamDiv.innerHTML = `
-                    <span>${index + 1}</span>
-                    <span><img src="${team.teamIconUrl}" alt="${team.teamName}" style="vertical-align: middle;"> ${team.shortName}</span>
-                    <span>${team.matches}</span>
-                    <span>${team.won}</span>
-                    <span>${team.draw}</span>
-                    <span>${team.lost}</span>
-                    <span>${team.goals}:${team.opponentGoals}</span>
-                    <span style="color: ${team.goalDiff >= 0 ? 'green' : 'red'};">${team.goalDiff >= 0 ? '+' : ''}${team.goalDiff}</span>
-                    <span><strong>${team.points}</strong></span>
-                `;
-                tableDiv.appendChild(teamDiv);
-            });
-        }
-
-        fetchData();
-    </script>
 </body>
-<footer>
-        powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>
-</footer>
 </html>
+
+
