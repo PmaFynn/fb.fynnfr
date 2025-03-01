@@ -17,128 +17,144 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 900px;
+            max-width: 500px;
         }
-        .section {
-            width: 100%;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
+
         .match {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
         }
-        .match div {
-            flex: 1;
+
+        .team {
             display: flex;
             align-items: center;
-            justify-content: center;
+            width: 30%;
             text-align: center;
         }
-        .match div:nth-child(2) {
-            flex-direction: column;
-        }
-        .match img {
+
+        .team img {
             width: 30px;
             height: 30px;
-            margin: 0 10px;
+            margin-right: 8px;
         }
+
+        .competition {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 40%;
+        }
+
+        .competition img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 5px;
+        }
+
+        .match-date {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
         .countdown {
-            font-size: 12px;
+            font-size: 14px;
             color: red;
-        }
-        @media (max-width: 600px) {
-            .match {
-                flex-direction: row;
-                justify-content: space-around;
-            }
-            .match div:nth-child(1),
-            .match div:nth-child(3) {
-                display: flex;
-                align-items: center;
-            }
-            .match div:nth-child(1) img,
-            .match div:nth-child(3) img {
-                margin: 0;
-            }
-            .match div:nth-child(2) {
-                flex-direction: column;
-            }
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="section" id="next-matches">
-            <h2>Nächste Spiele</h2>
-        </div>
+    <div class="container" id="next-matches">
+        <h2>Nächste Spiele</h2>
     </div>
+
     <script>
         async function fetchData() {
             try {
-                const bayernResponse = await fetch("https://api.openligadb.de/getnextmatchbyleagueteam/4741/40");
-                const bayernData = await bayernResponse.json();
-                const dortmundResponse = await fetch("https://api.openligadb.de/getnextmatchbyleagueteam/4741/7");
-                const dortmundData = await dortmundResponse.json();
-                const gladbachResponse = await fetch("https://api.openligadb.de/getnextmatchbyleagueteam/4741/87");
-                const gladbachData = await gladbachResponse.json();
-                const leverkusenResponse = await fetch("https://api.openligadb.de/getnextmatchbyleagueteam/4741/6");
-                const leverkusenData = await leverkusenResponse.json();
-                displayMatches([bayernData, dortmundData, gladbachData, leverkusenData]);
+                const apiUrls = [
+                    "http://api.football-data.org/v4/teams/81/matches?status=SCHEDULED",
+                    "http://api.football-data.org/v4/teams/5/matches?status=SCHEDULED",
+                    "http://api.football-data.org/v4/teams/3/matches?status=SCHEDULED",
+                    "http://api.football-data.org/v4/teams/4/matches?status=SCHEDULED",
+                    "http://api.football-data.org/v4/teams/18/matches?status=SCHEDULED"
+                ];
+                
+                const proxyUrl = "https://workers-playground-muddy-resonance-30f7.fynn091209.workers.dev/?url=";
+                let allMatches = [];
+
+                for (let url of apiUrls) {
+                    const response = await fetch(proxyUrl + encodeURIComponent(url));
+                    const data = await response.json();
+                    if (data.matches) {
+                        allMatches = [...allMatches, ...data.matches];
+                    }
+                }
+
+                allMatches.sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
+                displayMatches(allMatches);
+
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         }
+
         function displayMatches(matches) {
             const nextMatchesDiv = document.getElementById("next-matches");
+
             matches.forEach(match => {
                 nextMatchesDiv.appendChild(createMatchElement(match));
             });
         }
+
         function createMatchElement(match) {
-            const matchDate = new Date(match.matchDateTime);
+            const matchDate = new Date(match.utcDate);
             const now = new Date();
             const timeDiff = matchDate - now;
-            let countdownText = "";
+            let countdownText = "Live now";
+
             if (timeDiff > 0) {
-                const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                countdownText = `<span class='countdown'>Starts in: ${hours}h ${minutes}m</span>`;
+
+                if (days > 0) {
+                    countdownText = `Starts in: ${days}d ${hours}h ${minutes}m`;
+                } else {
+                    countdownText = `Starts in: ${hours}h ${minutes}m`;
+                }
             }
+
             const matchDiv = document.createElement("div");
             matchDiv.className = "match";
             matchDiv.innerHTML = `
-                <div>
-                    <img src="${match.team1.teamIconUrl}" alt="${match.team1.teamName}">
-                    <span>${match.team1.shortName}</span>
+                <div class="team">
+                    <img src="${match.homeTeam.crest}" alt="${match.homeTeam.name}">
+                    <!--<span>${match.homeTeam.shortName}</span>-->
                 </div>
-                <div>
-                    <span>${matchDate.toLocaleString()}</span>
-                    <div>${countdownText}</div>
+                <div class="competition">
+                    <img src="${match.competition.emblem}" alt="${match.competition.name}">
+                    <div class="match-date">${matchDate.getDate()}/${matchDate.getMonth() + 1}/${matchDate.getFullYear()}</div>
+                    <div class="countdown">${countdownText}</div>
                 </div>
-                <div>
-                    <span>${match.team2.shortName}</span>
-                    <img src="${match.team2.teamIconUrl}" alt="${match.team2.teamName}">
+                <div class="team" style="flex-direction: row-reverse; text-align: right;">
+                    <img src="${match.awayTeam.crest}" alt="${match.awayTeam.name}">
+                    <!--<span>${match.awayTeam.shortName}</span>-->
                 </div>
             `;
             return matchDiv;
         }
+
         fetchData();
     </script>
 </body>
 <footer>
-        powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
+    powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
 </footer>
 </html>
