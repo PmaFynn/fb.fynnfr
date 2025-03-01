@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Good Matches</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+        }
+        .section {
+            width: 100%;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .match {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+        .match div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .match div:nth-child(2) {
+            flex-direction: column;
+        }
+        .match img {
+            width: 30px;
+            height: 30px;
+            margin: 0 10px;
+        }
+        .countdown {
+            font-size: 12px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section" id="next-matches">
+            <h2>Nächste Spiele</h2>
+        </div>
+    </div>
+    <script>
+        async function fetchData() {
+            try {
+                const apiUrl1 = encodeURIComponent("http://api.football-data.org/v4/teams/81/matches?status=SCHEDULED");
+                const apiUrl2 = encodeURIComponent("http://api.football-data.org/v4/teams/5/matches?status=SCHEDULED");
+                const apiUrl3 = encodeURIComponent("http://api.football-data.org/v4/teams/3/matches?status=SCHEDULED");
+                const apiUrl4 = encodeURIComponent("http://api.football-data.org/v4/teams/4/matches?status=SCHEDULED");
+                const apiUrl5 = encodeURIComponent("http://api.football-data.org/v4/teams/18/matches?status=SCHEDULED");
+                
+                // Use Cloudflare Worker as a proxy to include the API key
+                const proxyUrl = "https://workers-playground-muddy-resonance-30f7.fynn091209.workers.dev/?url=";
+
+                // Barca
+                const barcaResponse = await fetch(proxyUrl + apiUrl1);
+                const barcaData = await barcaResponse.json();
+                const barcaMatches = barcaData.matches || [];
+
+                // Bayern
+                const bayernResponse = await fetch(proxyUrl + apiUrl2);
+                const bayernData = await bayernResponse.json();
+                const bayernMatches = bayernData.matches || [];
+
+                //Leverkusen
+                const leverkusenResponse = await fetch(proxyUrl + apiUrl3);
+                const leverkusenData = await leverkusenResponse.json();
+                const leverkusenMatches = leverkusenData.matches || [];
+
+                //Dortmund
+                const dortmundResponse = await fetch(proxyUrl + apiUrl4);
+                const dortmundData = await dortmundResponse.json();
+                const dortmundMatches = dortmundData.matches || [];
+
+                //Gladbach
+                const gladbachResponse = await fetch(proxyUrl + apiUrl5);
+                const gladbachData = await gladbachResponse.json();
+                const gladbachMatches = gladbachData.matches || [];
+
+                let allMatches = [...barcaMatches, ...bayernMatches, ...leverkusenMatches, ...dortmundMatches, ...gladbachMatches];
+                allMatches.sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
+
+                displayMatches(allMatches);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function displayMatches(matches) {
+            const nextMatchesDiv = document.getElementById("next-matches");
+            nextMatchesDiv.innerHTML = "";
+
+            matches.forEach(match => {
+                nextMatchesDiv.appendChild(createMatchElement(match));
+            });
+        }
+
+        function createMatchElement(match) {
+            const matchDate = new Date(match.utcDate);
+            const now = new Date();
+            const timeDiff = matchDate - now;
+            let countdownText = "";
+
+            if (timeDiff > 0) {
+                const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                countdownText = `<span class='countdown'>Starts in: ${hours}h ${minutes}m</span>`;
+            }
+
+            const matchDiv = document.createElement("div");
+            matchDiv.className = "match";
+            matchDiv.innerHTML = `
+                <div>
+                    <img src="${match.homeTeam.crest}" alt="${match.homeTeam.name}">
+                    <span>${match.homeTeam.shortName}</span>
+                </div>
+                <div>
+                    <div><img src="${match.competition.emblem}"></div>
+                    <span>${matchDate.toLocaleDateString()}</span>
+                    <div>${countdownText}</div>
+                </div>
+                <div>
+                    <span>${match.awayTeam.shortName}</span>
+                    <img src="${match.awayTeam.crest}" alt="${match.awayTeam.name}">
+                </div>
+            `;
+            return matchDiv;
+        }
+
+        fetchData();
+    </script>
+</body>
+<footer>
+    powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
+</footer>
+</html>
