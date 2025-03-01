@@ -10,15 +10,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f5f5f5;
         }
+
         .container {
             display: flex;
             flex-direction: column;
-            width: 100%;
+            width: 95%;  /* Ensures it does not stretch beyond the screen */
             max-width: 900px;
+            margin: auto;  /* Centers the container properly */
+            padding: 10px;
         }
+
         .section {
             width: 100%;
             padding: 20px;
@@ -27,11 +32,14 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             text-align: center;
+            box-sizing: border-box; /* Ensures padding doesn’t cause overflow */
         }
+
         h2 {
             text-align: center;
             margin-bottom: 10px;
         }
+
         .match, .team {
             display: flex;
             align-items: center;
@@ -39,10 +47,12 @@
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
+
         .match img, .team img {
             width: 30px;
             height: 30px;
         }
+
         .team {
             display: grid;
             grid-template-columns: 1fr 4fr 1fr 1fr 1fr 1fr 2fr 1fr 1fr;
@@ -50,10 +60,12 @@
             padding: 8px;
             font-size: 14px;
         }
+
         .table-header {
             font-weight: bold;
             background-color: #eaeaea;
         }
+
         .match {
             display: flex;
             align-items: center;
@@ -88,6 +100,16 @@
 
         /* Mobile adjustments */
         @media (max-width: 600px) {
+            .container {
+                width: 90%; /* Ensures proper centering */
+                padding: 10px;
+            }
+
+            .section {
+                margin: 0 auto; /* Centers each section */
+                padding: 15px;
+            }
+
             .match {
                 flex-direction: row;
                 justify-content: space-around;
@@ -136,7 +158,6 @@
             try {
                 const matchResponse = await fetch("https://api.openligadb.de/getmatchdata/bl1");
                 const matchData = await matchResponse.json();
-                // year has to be changed every season
                 const tableResponse = await fetch("https://api.openligadb.de/getbltable/bl1/2024");
                 const tableData = await tableResponse.json();
 
@@ -160,11 +181,7 @@
                     const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-                    if (days > 0) {
-                        countdownText = `Starts in: ${days}d ${hours}h ${minutes}m`;
-                    } else {
-                        countdownText = `Starts in: ${hours}h ${minutes}m`;
-                    }
+                    countdownText = days > 0 ? `Starts in: ${days}d ${hours}h ${minutes}m` : `Starts in: ${hours}h ${minutes}m`;
                 }
                 
                 if (timeDiff > 0) {
@@ -211,8 +228,6 @@
     </script>
 </body>
 <footer>
-        powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
+    Powered by <a href="https://www.openligadb.de/">OpenLigaDB</a>; get back to <a href="https://fb.fynnfr.org">Home</a>
 </footer>
 </html>
-<!--https://api.openligadb.de/getnextmatchbyleagueteam/4741/40-->
-<!--https://api.openligadb.de/getnextmatchbyleagueteam/4741/7-->
