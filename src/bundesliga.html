@@ -136,7 +136,7 @@
 <body>
     <div class="container">
         <div class="section" id="schedule">
-            <h2>Spieltag</h2>
+                <!--<h2 id="spieltagHeader">Spieltag</h2>-->
         </div>
         <div class="section" id="table">
             <h2>Tabelle</h2>
@@ -162,6 +162,7 @@
                 const tableResponse = await fetch("https://api.openligadb.de/getbltable/bl1/2024");
                 const tableData = await tableResponse.json();
 
+                fillHeader(matchData[0].group.groupName)
                 displayMatches(matchData);
                 displayTable(tableData);
             } catch (error) {
@@ -169,40 +170,56 @@
             }
         }
 
+        function fillHeader(spieltag) {
+            const scheduleDiv = document.getElementById("schedule");
+            const header = document.createElement("h2");
+            header.textContent = spieltag;
+            scheduleDiv.appendChild(header);
+        }
+
         function displayMatches(matches) {
             const scheduleDiv = document.getElementById("schedule");
+            const fragment = document.createDocumentFragment(); // Optimize performance
+
             matches.forEach(match => {
                 const matchDate = new Date(match.matchDateTime);
                 const now = new Date();
                 const timeDiff = matchDate - now;
-                let countdownText = "";
                 
+                // Calculate countdown
+                let countdownText = "";
                 if (timeDiff > 0) {
                     const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                    countdownText = days > 0 
+                        ? `Starts in: ${days}d ${hours}h ${minutes}m` 
+                        : `Starts in: ${hours}h ${minutes}m`;
+                }
 
-                    countdownText = days > 0 ? `Starts in: ${days}d ${hours}h ${minutes}m` : `Starts in: ${hours}h ${minutes}m`;
-                }
-                
-                if (timeDiff > 0) {
-                    const matchDiv = document.createElement("div");
-                    matchDiv.className = "match";
-                    matchDiv.innerHTML = `
-                        <div>
-                            <img src="${match.team1.teamIconUrl}" alt="${match.team1.teamName}">
-                        </div>
-                        <div>
-                            <div class="match-date">${matchDate.getDate()}/${matchDate.getMonth() + 1}/${matchDate.getFullYear()}</div>
-                            <div class="countdown">${countdownText}</div>
-                        </div>
-                        <div>
-                            <img src="${match.team2.teamIconUrl}" alt="${match.team2.teamName}">
-                        </div>
-                    `;
-                    scheduleDiv.appendChild(matchDiv);
-                }
+                // Create match element
+                const matchDiv = document.createElement("div");
+                matchDiv.className = "match";
+
+                matchDiv.innerHTML = `
+                    <div>
+                        <img src="${match.team1.teamIconUrl}" alt="${match.team1.teamName}">
+                        ${match.matchIsFinished ? `<div>${match.matchResults[1]?.pointsTeam1 ?? '-'}</div>` : ''}
+                    </div>
+                    <div class="match-info">
+                        <div class="match-date">${matchDate.getDate()}/${matchDate.getMonth() + 1}/${matchDate.getFullYear()}</div>
+                        ${timeDiff > 0 ? `<div class="countdown">${countdownText}</div>` : ''}
+                    </div>
+                    <div>
+                        ${match.matchIsFinished ? `<div>${match.matchResults[1]?.pointsTeam2 ?? '-'}</div>` : ''}
+                        <img src="${match.team2.teamIconUrl}" alt="${match.team2.teamName}">
+                    </div>
+                `;
+
+                fragment.appendChild(matchDiv);
             });
+
+            scheduleDiv.appendChild(fragment); // Append everything at once for better performance
         }
 
         function displayTable(teams) {
