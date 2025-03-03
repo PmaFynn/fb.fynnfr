@@ -97,7 +97,6 @@
                     }
                 }
 
-                allMatches.sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
                 displayMatches(allMatches);
 
             } catch (error) {
@@ -108,7 +107,23 @@
         function displayMatches(matches) {
             const nextMatchesDiv = document.getElementById("next-matches");
 
-            matches.forEach(match => {
+            // My homie chatGPT wrote this
+            const uniqueMatches = matches
+                .slice()
+                .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
+                .reduce((acc, match) => {
+                    const teams = [match.homeTeam.id, match.awayTeam.id].sort((x, y) => x - y);
+                    const matchIdentifier = `${teams[0]}-${teams[1]}-${match.utcDate}`;
+
+                    if (!acc.seen.has(matchIdentifier)) {
+                        acc.seen.add(matchIdentifier);
+                        acc.matches.push(match);
+                    }
+
+                    return acc;
+                }, { seen: new Set(), matches: [] }).matches;
+
+            uniqueMatches.forEach(match => {
                 nextMatchesDiv.appendChild(createMatchElement(match));
             });
         }
@@ -136,7 +151,6 @@
             matchDiv.innerHTML = `
                 <div class="team">
                     <img src="${match.homeTeam.crest}" alt="${match.homeTeam.name}">
-                    <!--<span>${match.homeTeam.shortName}</span>-->
                 </div>
                 <div class="competition">
                     <img src="${match.competition.emblem}" alt="${match.competition.name}">
@@ -145,7 +159,6 @@
                 </div>
                 <div class="team" style="flex-direction: row-reverse; text-align: right;">
                     <img src="${match.awayTeam.crest}" alt="${match.awayTeam.name}">
-                    <!--<span>${match.awayTeam.shortName}</span>-->
                 </div>
             `;
             return matchDiv;
