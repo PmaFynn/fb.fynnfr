@@ -130,6 +130,7 @@
 
         function createMatchElement(match) {
             const matchDate = new Date(match.utcDate);
+            const matchTime = matchDate.toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit'});
             const now = new Date();
             const timeDiff = matchDate - now;
             let countdownText = "Live now";
@@ -154,7 +155,7 @@
                 </div>
                 <div class="competition">
                     <img src="${match.competition.emblem}" alt="${match.competition.name}">
-                    <div class="match-date">${matchDate.getDate()}/${matchDate.getMonth() + 1}/${matchDate.getFullYear()}</div>
+                    <div class="match-date">${matchDate.getDate()}/${matchDate.getMonth() + 1}/${matchDate.getFullYear().toString().slice(-2)} - ${matchTime}</div>
                     <div class="countdown">${countdownText}</div>
                 </div>
                 <div class="team" style="flex-direction: row-reverse; text-align: right;">
